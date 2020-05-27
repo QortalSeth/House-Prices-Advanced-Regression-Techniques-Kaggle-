@@ -1,0 +1,74 @@
+* used for random imputation
+def fill_with_random(df2, column):
+    df = df2.copy()
+    df[column] = df[column].apply(lambda x:np.random.choice(df[column].dropna().values) if np.isnan(x) else x)
+    return df
+
+
+
+feature types in dataset:
+23 nominal, 23 ordinal, 14 discrete, and 20 continuous features
+
+Feature Types:
+nominal - categories with no order
+Dichotomous - nominal, but with only 2 possible values
+ordinal - categories where a logical ordering exists  e.g. review stars
+discrete
+continuous
+
+Ask about tradoffs between imputation types such as:
+KNN
+Random
+Regression
+
+
+
+# of Null Columns:
+MiscFeature     1406
+Alley           1369
+Fence           1179
+FireplaceQu      690
+LotFrontage      259
+GarageYrBlt       81
+GarageType        81
+GarageFinish      81
+GarageQual        81
+GarageCond        81
+BsmtFinType2      38
+BsmtExposure      38
+No    953
+Av    221
+Gd    134
+Mn    114
+
+BsmtFinType1      37
+
+BsmtCond          37
+TA    1282
+Gd     146
+Fa      28
+Ex       3
+Po       1
+
+BsmtQual          37
+TA    649
+Gd    618
+Ex    121
+Fa     35
+
+
+MasVnrArea         8
+MasVnrType         8
+None       864
+BrkFace    445
+Stone      128
+BrkCmn      15
+
+Electrical         1
+SBrkr    1334
+FuseA      94
+FuseF      27
+FuseP       3
+Mix         1
+
+
