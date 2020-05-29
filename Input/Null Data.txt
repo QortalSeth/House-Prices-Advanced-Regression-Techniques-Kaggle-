@@ -1,0 +1,2 @@
+
+LotFrontage: Linear feet of street connected to property

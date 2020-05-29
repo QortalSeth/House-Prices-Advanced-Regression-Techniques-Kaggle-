@@ -1,12 +1,12 @@
 from Modules.EDA import *
 
+modDF = pd.DataFrame()
 # c. data mods
 
-# use label encoding on ordinal vars to transform them into integers
 
-print(ordinal.columns)
+# print(ordinal.columns)
 
-train['newGarageScore'] = 5
+# train['newGarageScore'] = 5
 
 # columns to add:
 # create garage interaction column = garage quality * # of cars

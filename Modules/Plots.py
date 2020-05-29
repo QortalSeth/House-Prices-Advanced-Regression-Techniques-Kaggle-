@@ -1,6 +1,7 @@
 from Modules.dfMods import *
 
-print (discrete)
+#print (discrete)
+
 # To Do
 # plot sq feet to sale price
 # plot sale price distribution

@@ -151,4 +151,6 @@ def plotSetup(**params):
     for f,p in params.items():
         getattr(plt, f)(p)
 
+def selectExcept(df, colnames: List[str]):
+    return df[df.columns.difference(colnames, sort=False)]
 

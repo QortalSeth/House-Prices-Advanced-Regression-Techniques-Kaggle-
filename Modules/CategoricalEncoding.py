@@ -1,5 +1,16 @@
-from Modules.EDA import *
 import numpy as np
+from Modules.EDA import *
+
+nominalCounts = {}
+for c in nominal.columns:
+    nominalCounts[c] = nominal[c].value_counts()
+#ut.printDict(nominalCounts, 'Nominal Counts:')
+
+ordinalCounts = {}
+for c in ordinal.columns:
+    ordinalCounts[c] = ordinal[c].value_counts()
+#ut.printDict(ordinalCounts, "Ordinal Counts:")
+
 
 qualityDict = {np.nan: -1, 'Po': 0, 'Fa': 1, 'TA': 2, 'Gd': 3, 'Ex': 4}
 bsmtFinType = {np.nan: -1, 'Unf': 0, 'LwQ': 1, 'Rec': 2, 'BLQ': 3, 'ALQ': 4, 'GLQ': 5}
@@ -25,11 +36,19 @@ ordinal = ordinal.applymap(np.int64)
 
 dummies = pd.DataFrame()
 
+nominal['MSSubClass'].replace(
+    {20: '1 Story After 1946', 30: '1 Story before 1946', 40: '1 Story With Attic',
+     45: '1.5 Story Unfinished', 50: '1.5 Story Finished', 60: '2 Story after 1946',
+     70: '2 Story Before 1946', 75: '2.5 Story', 80: 'Split or Multi-level',
+     85: 'Split Foyer', 90: 'Duplex', 120: '1 Story PUD', 150: '1.5 Story PUD',
+     160: '2 Story PUD', 180: 'Mutilevel PUD', 190: '2 Family Conversion'}, inplace=True)
+
+#print(nominal.MSSubClass.value_counts())
 for c in nominal.columns:
     dummy = pd.get_dummies(nominal[c], drop_first=True)
     #dummies = dummies.append(dummy)
     dummies = pd.concat([dummies, dummy], axis=1)
 
+categorical = pd.concat([dummies, ordinal], axis=1)
 print('finished Categorical Encoding')
 
-categorical = pd.concat([dummies, ordinal], axis=1)
