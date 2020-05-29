@@ -146,11 +146,34 @@ def convertColumns(df: pd.DataFrame, oldType, newType):
 
 
 
-def plotSetup(**params):
-
+def plotSetup(params: Dict):
     for f,p in params.items():
         getattr(plt, f)(p)
 
 def selectExcept(df, colnames: List[str]):
     return df[df.columns.difference(colnames, sort=False)]
 
+def getLinSpace(listP: List):
+    start = listP[0]
+    stop = listP[-1]
+    num = len(listP)
+    return (start, stop, num)
+
+def getRange(listP: List):
+    start = int(listP[0])
+    end = int(listP[-1])
+    step = int(listP[1] - listP[0])
+    return start, end, step
+
+def multiplyRange(listP: List, mult: float):
+    start, end, step = getRange(listP)
+    listTest = list(range(start, end+step, step))
+    newstep = int(step * mult)
+    result = list(range(start, end+newstep, newstep))
+
+    return result
+
+def multiplyFigSize(x=1.0, y=1.0):
+        fig = plt.gcf()
+        figSize = fig.get_size_inches()
+        fig.set_size_inches((figSize[0]*x, figSize[1]*y))

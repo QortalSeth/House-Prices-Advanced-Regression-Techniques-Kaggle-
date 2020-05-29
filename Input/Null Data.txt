@@ -1,2 +1,117 @@
 
 LotFrontage: Linear feet of street connected to property
+
+Random?
+Alley 1369
+Grvl 50
+Pave 41
+
+Masonry veneer type  8
+None       864
+BrkFace    445
+Stone      128
+BrkCmn      15
+
+MasVnrArea   8
+
+BsmtQual   37
+TA    649
+Gd    618
+Ex    121
+Fa     35
+
+BsmtCond   37
+TA    1311
+Gd      65
+Fa      45
+Po       2
+
+
+BsmtExposure   38
+No    953
+Av    221
+Gd    134
+Mn    114
+
+
+BsmtFinType1   37
+Unf    430
+GLQ    418
+ALQ    220
+BLQ    148
+Rec    133
+LwQ     74
+
+BsmtFinType2   38
+Unf    1256
+Rec      54
+LwQ      46
+BLQ      33
+ALQ      19
+GLQ      14
+
+
+Mode?
+Electrical   1  
+SBrkr    1334
+FuseA      94
+FuseF      27
+FuseP       3
+Mix         1
+
+
+
+FireplaceQu   690
+Gd    380
+TA    313
+Fa     33
+Ex     24
+Po     20
+
+GarageType   81
+Attchd     870
+Detchd     387
+BuiltIn     88
+Basment     19
+CarPort      9
+2Types       6
+
+Use House Built date?
+GarageYrBlt   81
+
+GarageFinish   81
+Unf    605
+RFn    422
+Fin    352
+
+GarageQual   81
+TA    1311
+Fa      48
+Gd      14
+Ex       3
+Po       3
+
+GarageCond   81
+TA    1326
+Fa      35
+Gd       9
+Po       7
+Ex       2
+
+PoolQC   1453
+Gd    3
+Ex    2
+Fa    2
+
+
+Fence   1179
+MnPrv    157
+GdPrv     59
+GdWo      54
+MnWw      11
+
+MiscFeature   1406
+Shed    49
+Gar2     2
+Othr     2
+TenC     1

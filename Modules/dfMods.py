@@ -1,27 +1,32 @@
 from Modules.EDA import *
+from Modules.CategoricalEncoding import categorical
 
-modDF = pd.DataFrame()
 # c. data mods
 
 
 # print(ordinal.columns)
 
-# train['newGarageScore'] = 5
+modDF = categorical.copy()
+modDF['GarageScore'] = modDF['GarageQual'] * modDF['GarageArea']
+modDF['TotalFullBath'] = modDF['BsmtFullBath'] + modDF['FullBath']
+modDF['TotalHalfBath'] = modDF['BsmtHalfBath'] + modDF['HalfBath']
+modDF['TotalSF'] = modDF['GrLivArea'] + modDF['TotalBsmtSF']
+modDF['logSalePrice'] = np.log(modDF['SalePrice'])
 
-# columns to add:
-# create garage interaction column = garage quality * # of cars
-# create total Full Bath/ total half bath columns
+#modDF[''] = modDF[''] modDF['']
+print('Finished Modifying Dataframe')
+
+
 # average room size column
 # bathroom to room ratio
 # combine porch/deck columns (screened-in, 3Season, OpenPorch, and PoolDeck) into 1 porchSF column
-# add total square foot column using 'GrLivArea' + 'TotalBsmtSF'
 
 
 # remove outliers in numerical data
-# normalize sale price distribution by creating logprice column
-# use median, mode, or random imputation on missing values. perhaps try different imputation methods and see how they influence score
-# compute missingness of columns by %
 
-# examine variance of variables. Drop columns where most values are the same. Can be done by dividing most common value count by 2nd most common value count, drop columns below 5%
+
+
+
+
 # Add variable to determine if house is new based on sale year and built year
 #

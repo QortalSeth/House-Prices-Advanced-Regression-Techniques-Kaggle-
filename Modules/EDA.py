@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from Modules import Util as ut
 
 ## initialize data
@@ -15,9 +16,9 @@ def getColumnType(type: str):
     return columnNotes[columnNotes['Type'] == type]
 
 
-nominal = train[getColumnType('Nominal')['Name']]
-ordinal = train[getColumnType('Ordinal')['Name']]
-discrete = train[getColumnType('Discrete')['Name']]
+nominal = train[getColumnType('Nominal')['Name']].copy()
+ordinal = train[getColumnType('Ordinal')['Name']].copy()
+discrete = train[getColumnType('Discrete')['Name']].copy()
 
 
 print('finished EDA')
