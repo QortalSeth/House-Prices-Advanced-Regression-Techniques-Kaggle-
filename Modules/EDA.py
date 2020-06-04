@@ -12,13 +12,4 @@ columnNotes = pd.read_excel('Column Notes.xlsx')
 # print(columnNotes['Type'].value_counts())
 
 #categorical columns:
-def getColumnType(type: str):
-    return columnNotes[columnNotes['Type'] == type]
-
-
-nominal = train[getColumnType('Nominal')['Name']].copy()
-ordinal = train[getColumnType('Ordinal')['Name']].copy()
-discrete = train[getColumnType('Discrete')['Name']].copy()
-
-
 print('finished EDA')

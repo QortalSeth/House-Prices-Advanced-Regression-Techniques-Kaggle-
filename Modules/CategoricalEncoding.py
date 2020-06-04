@@ -1,5 +1,5 @@
 import numpy as np
-from Modules.EDA import *
+from Modules.ImputationTrain import *
 
 nominalCounts = {}
 for c in nominal.columns:
@@ -29,16 +29,15 @@ ordinal['BsmtFinType2'].replace(bsmtFinType, inplace=True)
 ordinal['HeatingQC'].replace(qualityDict, inplace=True)
 ordinal['KitchenQual'].replace(qualityDict, inplace=True)
 ordinal['FireplaceQu'].replace(qualityDict, inplace=True)
-ordinal['GarageFinish'].replace({np.nan: -1, 'Unf': 0, 'RFn': 1, 'Fin': 2}, inplace=True)
+ordinal['GarageFinish'].replace({'NA': -1, 'Unf': 0, 'RFn': 1, 'Fin': 2}, inplace=True)
 ordinal['GarageQual'].replace(qualityDict, inplace=True)
 ordinal['GarageCond'].replace(qualityDict, inplace=True)
 ordinal['PavedDrive'].replace({'N': 0, 'P': 1, 'Y': 2}, inplace=True)
-ordinal['PoolQC'].replace(qualityDict, inplace=True)
-ordinal['Fence'].replace({np.nan: -1, 'MnWw': 0, 'GdWo': 1, 'MnPrv': 2, 'GdPrv': 3}, inplace=True)
+#ordinal['PoolQC'].replace(qualityDict, inplace=True)
+ordinal['Fence'].replace({'NA': -1, 'MnWw': 0, 'GdWo': 1, 'MnPrv': 2, 'GdPrv': 3}, inplace=True)
 
 #ordinal[''].replace({}, inplace=True)
 
-#nulls = ordinal.isnull()
 ordinal = ordinal.applymap(np.int64)
 
 

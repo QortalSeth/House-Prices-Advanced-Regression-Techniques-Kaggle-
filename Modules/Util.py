@@ -26,6 +26,17 @@ def printDict(dict: Dict, start=''):
         print(k)
         print(v,'\n')
 
+def printNulls(df: pd.DataFrame):
+    print('Null Columns:')
+    null_columns = df.columns[df.isnull().any()]
+    for c in null_columns:
+        nullRows = df[c].isnull().sum()
+        totalRows = getRows(df[c])
+        print(c, ' ', nullRows, '/', totalRows, ' = ', int(nullRows / totalRows * 100), '%')
+        print(df[c].value_counts(), '\n')
+    print('# of Null columns: ', len(null_columns))
+
+
 def dictDiff(dict1: Dict[str,int], dict2: Dict[str,int]):
     result = {}
     for i in dict1.keys():

@@ -1,9 +1,9 @@
 
 #creates dfs from file, prints relevent data
-from Modules.EDA import *
+#from Modules.EDA import *
 
 # imputes missing values
-from Modules.Imputation import *
+from Modules.ImputationTrain import imputed
 
 # performs one hot encoding on nominal vars and label encoding on ordinal vars
 from Modules.CategoricalEncoding import categorical
@@ -15,7 +15,7 @@ from Modules.dfMods import modDF
 from Modules.Regressions import *
 
 # plots regression data
-#from Modules.Plots import *
+from Modules.Plots import *
 
-print(len(train) + len(categorical)  + len(modDF)  )
+print(len(imputed) + len(categorical)  + len(modDF)  )
 print('finished')
