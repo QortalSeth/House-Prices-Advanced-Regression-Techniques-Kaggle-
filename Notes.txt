@@ -1,3 +1,11 @@
+Meeting Notes:
+
+discuss various hyperparameters and tradeoffs between ML models
+
+
+
+
+
 * used for random imputation
 def fill_with_random(df2, column):
     df = df2.copy()
