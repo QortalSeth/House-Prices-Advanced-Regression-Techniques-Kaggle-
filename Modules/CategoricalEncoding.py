@@ -1,10 +1,10 @@
 import numpy as np
+
+from Modules.Global import splitDfByCategory
 from Modules.Impute import *
 
 def categoricalEncoding(imputed: pd.DataFrame):
-    nominal = imputed[getColumnType('Nominal')].copy()
-    ordinal = imputed[getColumnType('Ordinal')].copy()
-    discrete = imputed[getColumnType('Discrete')].copy()
+    nominal, ordinal, discrete, continuous = splitDfByCategory(imputed)
 
     nominalCounts = {}
     for c in nominal.columns:
@@ -67,7 +67,7 @@ def categoricalEncoding(imputed: pd.DataFrame):
 
 
 
-    categorical = pd.concat([dummies, ordinal, discrete.copy()], axis=1)
-    print('finished Categorical Encoding')
+    categorical = pd.concat([dummies, ordinal, discrete.copy(), continuous.copy()], axis=1)
+    print('finished Categorical Encoding','\n')
     return categorical
 

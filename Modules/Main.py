@@ -6,6 +6,7 @@ from Modules.Impute import impute
 from Modules.CategoricalEncoding import categoricalEncoding
 from Modules.dfMods import dfMods
 from Modules.Regressions import performRegressions
+import Modules.Util as ut
 ## Initialize values
 train = pd.read_csv('Input/train.csv')  # has ids 1-1460, has SalePrice
 test = pd.read_csv('Input/test.csv')    # has ids 1461-2919 doesn't have SalePrice
@@ -21,7 +22,9 @@ categorical = categoricalEncoding(imputed)
 dfMods = dfMods(categorical)
 
 ## performs regressions and returns dataframe with output
-regressions = performRegressions(dfMods)
+#models, df =  ut.getExecutionTime(performRegressions, dfMods)
+models, df = performRegressions(dfMods)
+
 # plots regression data
 
 print('finished')

@@ -41,12 +41,15 @@ def impute(df):
     nh = imputed.groupby(by='Neighborhood').mean()[['LotFrontage']].to_dict()['LotFrontage']
     imputed['LotFrontage'] = imputed.apply(lambda row: nh[row['Neighborhood']] if math.isnan(row['LotFrontage']) else row['LotFrontage'], axis=1 )
 
+# Garage Year Built is same as house year built if null
+    imputed['GarageYrBlt'] = imputed.apply(lambda row: row['YearBuilt'] if math.isnan(row['GarageYrBlt']) else row['GarageYrBlt'], axis=1)
+
 #Impute NA as class:
     imputed['Alley'].fillna('No Alley', inplace=True)
     imputed['MasVnrType'].fillna('None', inplace=True)
     imputed['MasVnrArea'].fillna(0, inplace=True)
     imputed['GarageType'].fillna('NA', inplace=True)
-    imputed['GarageYrBlt'].fillna('NA', inplace=True)
+    #imputed['GarageYrBlt'].fillna('NA', inplace=True)
     imputed['GarageFinish'].fillna('NA', inplace=True)
     imputed['Fence'].fillna('NA', inplace=True)
 
@@ -59,16 +62,11 @@ def impute(df):
 
 
 #Drop column due to too much missingness
-    imputed.drop(columns=['PoolQC', 'MiscFeature'], inplace=True, axis=1)
+    imputed.drop(columns=['PoolQC', 'PoolArea', 'MiscFeature', 'MiscVal'], inplace=True, axis=1)
 #ut.printNulls(imputed)
     nulls = imputed[imputed['Electrical'].isnull()]
 
-    print('Finished Imputation')
-
-    nominal = imputed[getColumnType('Nominal')].copy()
-    ordinal = imputed[getColumnType('Ordinal')].copy()
-    discrete = imputed[getColumnType('Discrete')].copy()
-
+    print('Finished Imputation','\n')
     return imputed
 
 

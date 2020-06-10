@@ -5,6 +5,8 @@ from Modules.EDA import *
 
 # print(ordinal.columns)
 
+
+
 def dfMods(categorical: pd.DataFrame):
     modDF = categorical.copy()
     modDF['GarageScore'] = modDF['GarageQual'] * modDF['GarageArea']
@@ -13,8 +15,10 @@ def dfMods(categorical: pd.DataFrame):
     modDF['TotalSF'] = modDF['GrLivArea'] + modDF['TotalBsmtSF']
     modDF['LogSalePrice'] = np.log(modDF['SalePrice'])
 
+    modDF.drop(columns=['GarageQual', 'GarageArea', 'BsmtFullBath', 'FullBath', 'BsmtHalfBath', 'HalfBath', 'GrLivArea', 'TotalBsmtSF', 'SalePrice'], inplace=True)
+
     #modDF[''] = modDF[''] modDF['']
-    print('Finished Modifying Dataframe')
+    print('Finished Modifying Dataframe','\n')
     return modDF
 
     # average room size column

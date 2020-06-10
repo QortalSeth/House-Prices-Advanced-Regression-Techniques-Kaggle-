@@ -2,7 +2,7 @@ import pandas as pd
 import datetime as dt
 from typing import List, Dict, Callable
 import matplotlib.pyplot as plt
-
+import time
 
 def getRows(df: pd.DataFrame) -> int:
     return len(df.index)
@@ -188,3 +188,22 @@ def multiplyFigSize(x=1.0, y=1.0):
         fig = plt.gcf()
         figSize = fig.get_size_inches()
         fig.set_size_inches((figSize[0]*x, figSize[1]*y))
+
+
+def getExecutionTime(fun: Callable, params=None):
+    pType = type(params)
+    start_time = time.time()
+
+    switchByParams = {
+         dict: lambda: fun(**params),
+         list: lambda: fun(*params),
+         None: lambda: fun()
+         }
+    #switchByParams(type(params), fun(params))
+    execute = switchByParams.get(pType, lambda: fun(params))
+    execute()
+
+    #fun(**params)
+    seconds = round(time.time() - start_time, 2)
+    minutes = round(seconds//60, 2)
+    print('Minutes: ', minutes, '  Seconds: ', seconds)
