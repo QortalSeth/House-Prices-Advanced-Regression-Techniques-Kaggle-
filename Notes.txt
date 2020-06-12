@@ -80,3 +80,12 @@ FuseP       3
 Mix         1
 
 
+
+times:
+Linear 0.02
+Ridge 0.01
+lasso: 0.02
+ElasticNet: 0.03
+Random Forest:        38 sec
+Gradient Boost: 3 min 42 sec
+SVM:            2 min 18 sec

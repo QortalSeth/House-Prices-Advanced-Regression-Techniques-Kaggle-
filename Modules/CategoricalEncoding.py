@@ -44,30 +44,17 @@ def categoricalEncoding(imputed: pd.DataFrame):
     #ordinal[''].replace({}, inplace=True)
 
     ordinal = ordinal.applymap(np.int64)
-
-
     dummies = pd.DataFrame()
-
-    nominal['MSSubClass'].replace(
-        {20: '1 Story After 1946', 30: '1 Story before 1946', 40: '1 Story With Attic',
-         45: '1.5 Story Unfinished', 50: '1.5 Story Finished', 60: '2 Story after 1946',
-         70: '2 Story Before 1946', 75: '2.5 Story', 80: 'Split or Multi-level',
-         85: 'Split Foyer', 90: 'Duplex', 120: '1 Story PUD', 150: '1.5 Story PUD',
-         160: '2 Story PUD', 180: 'Mutilevel PUD', 190: '2 Family Conversion'}, inplace=True)
-
-    #print(nominal.MSSubClass.value_counts())
-
 
     for c in nominal.columns:
         dummy = pd.get_dummies(nominal[c], drop_first=True)
-        #dummies = dummies.append(dummy)
         dummies = pd.concat([dummies, dummy], axis=1)
 
 
 
 
 
-    categorical = pd.concat([dummies, ordinal, discrete.copy(), continuous.copy()], axis=1)
+    categorical = pd.concat([ordinal, discrete.copy(), continuous.copy()], axis=1)
     print('finished Categorical Encoding','\n')
-    return categorical
+    return categorical, dummies
 

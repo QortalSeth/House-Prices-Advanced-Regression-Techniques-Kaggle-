@@ -4,22 +4,21 @@ from Modules.EDA import columnNotes, columnNotes2
 from typing import List
 from sklearn.preprocessing import StandardScaler
 
-def getColumnType(type: str, includeDfMods=False):
-
-
+def getColumnType(df, type: str, includeDfMods=False):
     returnValue = columnNotes[columnNotes['Type'] == type]
     if includeDfMods:
         returnValue = returnValue.append(columnNotes2[columnNotes2['Type'] == type])
     returnValue = returnValue[returnValue['Dropped'] != 'Yes']
 
-    return returnValue['Name']
+    return [x for x in returnValue['Name'] if x in df]
+
 
 def splitDfByCategory(df: pd.DataFrame, includeDfMods=False):
 
-    nominal = df[getColumnType('Nominal', includeDfMods)].copy()
-    ordinal = df[getColumnType('Ordinal', includeDfMods)].copy()
-    discrete = df[getColumnType('Discrete', includeDfMods)].copy()
-    continuous = df[getColumnType('Continuous', includeDfMods)].copy()
+    nominal = df[getColumnType(df, 'Nominal', includeDfMods)].copy()
+    ordinal = df[getColumnType(df, 'Ordinal', includeDfMods)].copy()
+    discrete = df[getColumnType(df, 'Discrete', includeDfMods)].copy()
+    continuous = df[getColumnType(df, 'Continuous', includeDfMods)].copy()
     return nominal, ordinal, discrete, continuous
 
 def scaleData(df: pd.DataFrame, columns: List, inplace=False):

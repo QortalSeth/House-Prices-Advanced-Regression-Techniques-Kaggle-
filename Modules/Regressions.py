@@ -14,7 +14,8 @@ import pandas as pd
 import Modules.Util as ut
 from Modules.Global import splitDfByCategory
 from sklearn.preprocessing import StandardScaler
-
+from Modules.EDA import train
+from typing import Dict
 
 # d. regression
 
@@ -23,8 +24,10 @@ class Regression:
         self.model = model
         self.name = name
         self.hyperparams = hyperparams
+        self.bestParams: Dict
 
     def fit(self,x,y):
+        print('Starting ', self.name)
         xTrain, xTest, yTrain, yTest = train_test_split(x, y, test_size=0.3, random_state=0)
 
         self.model.fit(xTrain,yTrain)
@@ -33,11 +36,13 @@ class Regression:
         self.getRMSE(yTest)
 
 
-
     def fitCV(self,x,y, cv=5):
-        self.model.fit(x,y)
-        self.grid = GridSearchCV(self.model, self.hyperparams, cv=cv, return_train_score = True, n_jobs=-1)
-        fit = self.grid.fit(x,y)
+        print('Starting ', self.name)
+        xTrain, xTest, yTrain, yTest = train_test_split(x, y, test_size=0.3, random_state=0)
+
+        self.model.fit(xTrain,yTrain)
+        grid = GridSearchCV(self.model, self.hyperparams, cv=cv, return_train_score = True, n_jobs=-1)
+        fit = grid.fit(xTest,yTest)
         self.bestParams = fit.best_params_
         self.score = fit.best_score_
         self.predicted = self.model.predict(x)
@@ -48,58 +53,55 @@ class Regression:
 
 
 def assembleModels():
-    mi = 1000
 
-    models = [
-    Regression(LinearRegression(n_jobs=-1), 'Linear'),
-    Regression(Ridge(), 'Ridge', {'alpha': np.linspace(1e-3,200,20)}),
-    Regression(Lasso(max_iter = mi), 'Lasso', {'alpha': np.linspace(1e-3,200,20)}),
-    Regression(ElasticNet(max_iter = mi), 'ElasticNet', {'l1_ratio': np.linspace(0.01, 1, 30)}),
+    alpha = np.linspace(1e-4,200,20)
+    models = {
+    'Linear'     : Regression(LinearRegression(n_jobs=-1), 'Linear'),
+    'Ridge'      :  Regression(Ridge(), 'Ridge', {'alpha': alpha}),
+    'Lasso'      :  Regression(Lasso(max_iter = 100000), 'Lasso', {'alpha': alpha}),
+    'Elastic Net': Regression(ElasticNet(max_iter = 100000), 'ElasticNet', {'alpha': alpha, 'l1_ratio': np.linspace(0.01, 1, 20)}),
 
-    Regression(RandomForestRegressor(n_jobs=-1), 'Random Forest',
-    {
-        'max_depth': range(1, 21),
+    'Random Forest': Regression(RandomForestRegressor(n_jobs=-1), 'Random Forest',
+    {   'max_depth': range(2, 16),
         'n_estimators': range(10, 60, 10)}),
 
-    Regression(GradientBoostingRegressor(), 'Gradient Boost',
-               {'learning_rate': np.linspace(.001, 1, 20),
-                'n_estimators': np.linspace(10, 1000, 50),
+    'Gradient Boost': Regression(GradientBoostingRegressor(), 'Gradient Boost',
+               {'learning_rate': np.linspace(.001, 1, 10),
+                'n_estimators': range(10, 100, 10),
                 'max_depth': range(2, 12, 2),
-                'loss': ['ls', 'lad', 'huber', 'quantile']}
-    ), # use feature_importances for feature selection
+                'loss': ['ls']}), # use feature_importances for feature selection
 
-    Regression(SVR(), 'Support Vector Regressor',
-               {'C': np.linspace(1, 100, 20),
+    'SVM': Regression(SVR(), 'Support Vector Regressor',
+               {'C': np.linspace(1, 200, 20),
                 'gamma': np.linspace(1e-4, 1e-2, 10)})
     #Regression((), ''),
     #Regression((), ''),
-    ]
+    }
     return models
 
 
-def performRegressions(df: pd.DataFrame):
+def performRegressions(df: pd.DataFrame, dummies: pd.DataFrame):
     models = assembleModels()
-    continuousColumns = getColumnType('Continuous', True)
-    continuousColumns = [x for x in continuousColumns if x in df]
+    continuousColumns = getColumnType(df, 'Continuous', True)
     scaledDF = scaleData(df, continuousColumns)
 
+    dummyX = pd.concat([dummies, df], axis=1)
+    nominal = train[ getColumnType(train, 'Nominal')]
 
-    x = scaledDF.drop(columns=['LogSalePrice'])
+    x = pd.concat([nominal , scaledDF.drop(columns=['LogSalePrice'])], axis=1)
     y = df['LogSalePrice']
 
-    for model in models:
-        paramDict = {'x': x, 'y': y}
-        if model.hyperparams:
-            print('Starting ', model.name)
-            ut.getExecutionTime(model.fitCV, paramDict)
-            print('')
-        else:
-            print('Starting ', model.name)
-            ut.getExecutionTime(model.fit, paramDict)
-            print('')
+    ut.getExecutionTime(lambda: models['Linear'].fit(dummyX, y))
+    ut.getExecutionTime(lambda: models['Ridge'].fitCV(dummyX, y))
+    ut.getExecutionTime(lambda: models['Lasso'].fitCV(dummyX, y))
+    ut.getExecutionTime(lambda: models['Elastic Net'].fitCV(dummyX, y))
 
-    df = pd.DataFrame([r.__dict__ for r in models])
-    return models, df
+    ut.getExecutionTime(lambda: models['Random Forest'].fitCV(dummyX,y))
+    ut.getExecutionTime(lambda: models['Gradient Boost'].fitCV(dummyX, y))
+    ut.getExecutionTime(lambda: models['SVM'].fitCV(dummyX, y))
+
+    results = pd.DataFrame([r.__dict__ for r in models.values()]).drop(columns=['model', 'hyperparams', 'predicted'] )
+    return models, results
 
 
 

@@ -190,20 +190,16 @@ def multiplyFigSize(x=1.0, y=1.0):
         fig.set_size_inches((figSize[0]*x, figSize[1]*y))
 
 
-def getExecutionTime(fun: Callable, params=None):
-    pType = type(params)
+def getExecutionTime(fun: Callable):
     start_time = time.time()
+    fun()
 
-    switchByParams = {
-         dict: lambda: fun(**params),
-         list: lambda: fun(*params),
-         None: lambda: fun()
-         }
-    #switchByParams(type(params), fun(params))
-    execute = switchByParams.get(pType, lambda: fun(params))
-    execute()
+    seconds = (time.time() - start_time) % 60
 
-    #fun(**params)
-    seconds = round(time.time() - start_time, 2)
-    minutes = round(seconds//60, 2)
-    print('Minutes: ', minutes, '  Seconds: ', seconds)
+    if seconds > 0:
+        seconds = round(seconds , 2)
+    else:
+        seconds = round(seconds, 0)
+
+    minutes = int(seconds//60)
+    print('Minutes: ', minutes, '  Seconds: ', seconds,'\n')
