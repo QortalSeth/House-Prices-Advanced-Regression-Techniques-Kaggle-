@@ -1,11 +1,14 @@
 from Modules.EDA import *
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 
-# c. data mods
+def calc_vif(X):
 
+    # Calculating VIF
+    vif = pd.DataFrame()
+    vif["variables"] = X.columns
+    vif["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
 
-# print(ordinal.columns)
-
-
+    return(vif)
 
 def dfMods(categorical: pd.DataFrame):
     modDF = categorical.copy()
@@ -13,11 +16,21 @@ def dfMods(categorical: pd.DataFrame):
     modDF['TotalFullBath'] = modDF['BsmtFullBath'] + modDF['FullBath']
     modDF['TotalHalfBath'] = modDF['BsmtHalfBath'] + modDF['HalfBath']
     modDF['TotalSF'] = modDF['GrLivArea'] + modDF['TotalBsmtSF']
-    modDF['LogSalePrice'] = np.log(modDF['SalePrice'])
+
+    if 'SalePrice' in modDF.columns:
+        modDF['LogSalePrice'] = np.log(modDF['SalePrice'])
 
     modDF.drop(columns=['GarageQual', 'GarageArea', 'BsmtFullBath', 'FullBath', 'BsmtHalfBath', 'HalfBath', 'GrLivArea', 'TotalBsmtSF', 'SalePrice'], inplace=True)
-
     #modDF[''] = modDF[''] modDF['']
+
+## use vif to reduce muticollinarity
+    vifCutoff = 5
+    vif = calc_vif(modDF)
+    mcColumns = vif[vif['VIF'] > vifCutoff]['variables']
+    mcColumns = mcColumns[mcColumns != 'LogSalePrice']
+    modDF.drop(columns=mcColumns, inplace=True)
+    vif = vif[vif['VIF'] <= vifCutoff]
+
     print('Finished Modifying Dataframe','\n')
     return modDF
 

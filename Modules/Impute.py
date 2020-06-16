@@ -6,7 +6,7 @@ from Modules.Global import getColumnType
 def impute(df):
     imputed = train.copy()
 
-    # ut.printNulls(imputed)
+   # ut.printNulls(imputed)
 
     nullsDir = 'Visualizations/Nulls/'
     histParams = {'kind': 'hist', 'legend': False, 'bins': 100}
@@ -48,7 +48,16 @@ def impute(df):
     imputed['Alley'].fillna('No Alley', inplace=True)
     imputed['MasVnrType'].fillna('None', inplace=True)
     imputed['MasVnrArea'].fillna(0, inplace=True)
+    imputed['BsmtQual'].fillna('NA', inplace=True)
+    imputed['BsmtCond'].fillna('NA', inplace=True)
+    imputed['BsmtExposure'].fillna('NA', inplace=True)
+    imputed['BsmtFinType1'].fillna('NA', inplace=True)
+    imputed['BsmtFinType2'].fillna('NA', inplace=True)
+    imputed['FireplaceQu'].fillna('NA', inplace=True)
+
     imputed['GarageType'].fillna('NA', inplace=True)
+    imputed['GarageQual'].fillna('NA', inplace=True)
+    imputed['GarageCond'].fillna('NA', inplace=True)
     #imputed['GarageYrBlt'].fillna('NA', inplace=True)
     imputed['GarageFinish'].fillna('NA', inplace=True)
     imputed['Fence'].fillna('NA', inplace=True)

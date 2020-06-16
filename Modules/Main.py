@@ -16,16 +16,29 @@ sampleSubmission = pd.read_csv('Input/sample_submission.csv') # contains ids and
 imputed = impute(train)
 
 ## performs one hot encoding on nominal vars and label encoding on ordinal vars
-categorical, dummies = categoricalEncoding(imputed)
+categorical = categoricalEncoding(imputed)
 
 ## adds or modifies columns to prepare for regressions
 dfMods = dfMods(categorical)
 
 ## performs regressions and returns dataframe with output
-models, df = ut.getExecutionTime(lambda: performRegressions(dfMods, dummies))
+models, df = ut.getExecutionTime(lambda: performRegressions(dfMods))
 
-# plots regression data
+## impute test data
+imputedTest = impute(test)
 
+## categorical test data
+categoricalTest = categoricalEncoding(imputedTest)
+
+## mod test data
+modTest = dfMods(categoricalTest)
+
+## predict test data
+
+
+## convert log sale price to sale price
+
+## plot data
 print('finished')
 
 

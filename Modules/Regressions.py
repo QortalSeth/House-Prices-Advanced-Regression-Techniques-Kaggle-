@@ -31,7 +31,8 @@ class Regression:
         xTrain, xTest, yTrain, yTest = train_test_split(x, y, test_size=0.3, random_state=0)
 
         self.model.fit(xTrain,yTrain)
-        self.score = self.model.score(xTest, yTest)
+        self.trainScore = self.model.score(xTrain, yTrain)
+        self.testScore = self.model.score(xTest, yTest)
         self.predicted = self.model.predict(xTest)
         self.getRMSE(yTest)
 
@@ -44,22 +45,27 @@ class Regression:
         grid = GridSearchCV(self.model, self.hyperparams, cv=cv, return_train_score = True, n_jobs=-1)
         fit = grid.fit(xTest,yTest)
         self.bestParams = fit.best_params_
-        self.score = fit.best_score_
-        self.predicted = self.model.predict(x)
-        self.getRMSE(y)
+        self.trainScore = fit.best_estimator_.score(xTrain, yTrain)
+        self.testScore = fit.best_estimator_.score(xTest, yTest)
+
+        self.predicted = self.model.predict(xTest)
+
+        self.trainRMSE = self.getRMSE(yTrain)
+        self.testRMSE = self.getRMSE(yTest)
+
 
     def getRMSE(self, y):
-        self.rmse = sqrt(mean_squared_error(y, self.predicted))
+        return sqrt(mean_squared_error(y, self.predicted))
 
 
 def assembleModels():
 
-    alpha = np.linspace(1e-4,200,20)
+    alpha = np.linspace(1e-100,10,30)
     models = {
     'Linear'     : Regression(LinearRegression(n_jobs=-1), 'Linear'),
     'Ridge'      :  Regression(Ridge(), 'Ridge', {'alpha': alpha}),
-    'Lasso'      :  Regression(Lasso(max_iter = 100000), 'Lasso', {'alpha': alpha}),
-    'Elastic Net': Regression(ElasticNet(max_iter = 100000), 'ElasticNet', {'alpha': alpha, 'l1_ratio': np.linspace(0.01, 1, 20)}),
+    'Lasso'      :  Regression(Lasso(max_iter=100000), 'Lasso', {'alpha': alpha}),
+    'Elastic Net': Regression(ElasticNet(max_iter=100000), 'ElasticNet', {'alpha': alpha, 'l1_ratio': np.linspace(0, 1, 20)}),
 
     'Random Forest': Regression(RandomForestRegressor(n_jobs=-1), 'Random Forest',
     {   'max_depth': range(2, 16),
@@ -80,38 +86,31 @@ def assembleModels():
     return models
 
 
-def performRegressions(df: pd.DataFrame, dummies: pd.DataFrame):
+def performRegressions(df: pd.DataFrame):
     models = assembleModels()
-    continuousColumns = getColumnType(df, 'Continuous', True)
-    scaledDF = scaleData(df, continuousColumns)
-
-    dummyX = pd.concat([dummies, df], axis=1)
-    nominal = train[ getColumnType(train, 'Nominal')]
-
-    x = pd.concat([nominal , scaledDF.drop(columns=['LogSalePrice'])], axis=1)
     y = df['LogSalePrice']
 
-    ut.getExecutionTime(lambda: models['Linear'].fit(dummyX, y))
-    ut.getExecutionTime(lambda: models['Ridge'].fitCV(dummyX, y))
-    ut.getExecutionTime(lambda: models['Lasso'].fitCV(dummyX, y))
-    ut.getExecutionTime(lambda: models['Elastic Net'].fitCV(dummyX, y))
+    continuousColumns = getColumnType(df, 'Continuous', True)
+    x = scaleData(df.drop(columns=['LogSalePrice']), continuousColumns)
 
-    ut.getExecutionTime(lambda: models['Random Forest'].fitCV(dummyX,y))
-    ut.getExecutionTime(lambda: models['Gradient Boost'].fitCV(dummyX, y))
-    ut.getExecutionTime(lambda: models['SVM'].fitCV(dummyX, y))
+    ut.getExecutionTime(lambda: models['Linear'].fit(x, y))
+    ut.getExecutionTime(lambda: models['Ridge'].fitCV(x, y))
+    ut.getExecutionTime(lambda: models['Lasso'].fitCV(x, y))
+    ut.getExecutionTime(lambda: models['Elastic Net'].fitCV(x, y))
+
+    ut.getExecutionTime(lambda: models['Random Forest'].fitCV(x,y))
+    ut.getExecutionTime(lambda: models['Gradient Boost'].fitCV(x, y))
+    ut.getExecutionTime(lambda: models['SVM'].fitCV(x, y))
 
     results = pd.DataFrame([r.__dict__ for r in models.values()]).drop(columns=['model', 'hyperparams', 'predicted'] )
     return models, results
 
 
-
+def predictLogSalePrice(dfTest: pd.DataFrame, models: Dict):
+    pass
 
 # look up randomizedSearchCV vs. GridsearchCV
-# perform linear regression on all features vs sales price
-# use box cox transformation on numeric vars when doing linear models
-# use spline regression as a ML model
-# use XGBoost, GBM, Random Forest, tree models
-#
+
 # use VIF > 5, AIC, BIC for feature selection
 # Don't use linear regression on categorical vars
 # create ensemble of many different models (check for packages that can do this)

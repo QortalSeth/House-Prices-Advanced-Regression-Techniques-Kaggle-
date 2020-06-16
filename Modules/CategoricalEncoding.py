@@ -47,14 +47,14 @@ def categoricalEncoding(imputed: pd.DataFrame):
     dummies = pd.DataFrame()
 
     for c in nominal.columns:
-        dummy = pd.get_dummies(nominal[c], drop_first=True)
+        dummy = pd.get_dummies(nominal[c])
         dummies = pd.concat([dummies, dummy], axis=1)
 
 
 
 
 
-    categorical = pd.concat([ordinal, discrete.copy(), continuous.copy()], axis=1)
+    categorical = pd.concat([dummies, ordinal, discrete.copy(), continuous.copy()], axis=1)
     print('finished Categorical Encoding','\n')
-    return categorical, dummies
+    return categorical
 

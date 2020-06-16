@@ -3,6 +3,9 @@ import datetime as dt
 from typing import List, Dict, Callable
 import matplotlib.pyplot as plt
 import time
+import types
+
+
 
 def getRows(df: pd.DataFrame) -> int:
     return len(df.index)
@@ -158,8 +161,13 @@ def convertColumns(df: pd.DataFrame, oldType, newType):
 
 
 def plotSetup(params: Dict):
-    for f,p in params.items():
-        getattr(plt, f)(p)
+    for f, p in params.items():
+        if isinstance(p, types.LambdaType):
+            getattr(plt, f)(p())
+        elif isinstance(f, types.LambdaType):
+            f()
+        else:
+            getattr(plt, f)(p)
 
 def selectExcept(df, colnames: List[str]):
     return df[df.columns.difference(colnames, sort=False)]
@@ -203,3 +211,4 @@ def getExecutionTime(fun: Callable):
 
     minutes = int(seconds//60)
     print('Minutes: ', minutes, '  Seconds: ', seconds,'\n')
+
