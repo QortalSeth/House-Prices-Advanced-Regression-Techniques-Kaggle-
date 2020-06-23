@@ -34,7 +34,7 @@ def scaleData(df: pd.DataFrame, columns: List, inplace=False):
         column = sc.fit_transform(column)
         column = flatten(column)
         column = pd.Series(column)
-        df[c] = column
+        result[c] = column
     if inplace:
         return None
     else:

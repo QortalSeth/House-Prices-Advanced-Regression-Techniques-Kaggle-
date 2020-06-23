@@ -45,6 +45,29 @@ def plotScatter():
 
 
 
+    nullsDir = 'Visualizations/Nulls/'
+    histParams = {'kind': 'hist', 'legend': False, 'bins': 100}
+
+# train[['MasVnrArea']].plot(**histParams)
+# ut.plotSetup({'xlabel' : 'Area in Square Feet',
+#               #'xticks'  : ut.multiplyRange(plt.xticks()[0], 0.5),
+#               'title'  :'Histogram of Masonry Veneer Area',
+#               'grid': None,
+#               'savefig': nullsDir + 'MasVnrArea.png'
+#               #'show'   : None
+#               })
+#
+# train[['LotFront'
+#        'age']].plot(**histParams)
+# ut.plotSetup({'xlabel' : 'Length in Feet',
+#               #'xticks'  : ut.multiplyRange(plt.xticks()[0], 0.5),
+#               'title'  :'Histogram of Lot Frontage Area',
+#               'grid': None,
+#               'savefig': nullsDir + 'LotFrontageArea.png'
+#               #'show'   : None
+#               })
+
+
 
 # To Do
 

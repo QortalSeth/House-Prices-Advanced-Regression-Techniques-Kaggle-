@@ -4,7 +4,7 @@ from typing import List, Dict, Callable
 import matplotlib.pyplot as plt
 import time
 import types
-
+import pickle
 
 
 def getRows(df: pd.DataFrame) -> int:
@@ -38,6 +38,23 @@ def printNulls(df: pd.DataFrame):
         print(c, ' ', nullRows, '/', totalRows, ' = ', int(nullRows / totalRows * 100), '%')
         print(df[c].value_counts(), '\n')
     print('# of Null columns: ', len(null_columns))
+
+def getNulls(df: pd.DataFrame):
+    null_columns = df.columns[df.isnull().any()]
+    result = df[null_columns]
+    return result[result.isnull().any(axis=1)]
+
+def pickleObject(object, fileName):
+    fileWrite = open(fileName, 'wb')
+    models = pickle.dump(object, fileWrite)
+    fileWrite.close()
+
+def unpickleObject(fileName: str):
+    fileRead = open(fileName, 'rb')
+    object = pickle.load(fileRead)
+    fileRead.close()
+    return object
+
 
 
 def dictDiff(dict1: Dict[str,int], dict2: Dict[str,int]):
@@ -200,15 +217,24 @@ def multiplyFigSize(x=1.0, y=1.0):
 
 def getExecutionTime(fun: Callable):
     start_time = time.time()
-    fun()
+    returnValue = fun()
 
-    seconds = (time.time() - start_time) % 60
+    timeUsed = time.time() - start_time
+    seconds = timeUsed % 60
+    minutes = int(timeUsed // 60)
 
-    if seconds > 0:
+    if seconds < 1:
         seconds = round(seconds , 2)
     else:
-        seconds = round(seconds, 0)
+        seconds = int(seconds)
 
-    minutes = int(seconds//60)
-    print('Minutes: ', minutes, '  Seconds: ', seconds,'\n')
 
+    timeString = 'Minutes: '+ str(minutes)+ '  Seconds: '+ str(seconds)
+    print(timeString,'\n')
+    return timeString, returnValue
+
+def appendColumns(columnList):
+    return pd.concat(columnList, axis=1)
+
+def getColumnDiff(df1: pd.DataFrame, df2: pd.DataFrame):
+    return [value for value in df1.columns if value not in df2.columns]

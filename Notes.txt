@@ -1,6 +1,8 @@
 Meeting Notes:
 
 discuss various hyperparameters and tradeoffs between ML models
+Dummies in train columns are not in test columns. What to do?
+
 
 
 

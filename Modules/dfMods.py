@@ -10,29 +10,35 @@ def calc_vif(X):
 
     return(vif)
 
+def removeColumnsByVif(df: pd.DataFrame):
+    vifCutoff = 5
+    #ut.printNulls(modDF)
+    #nulls = ut.getNulls(modDF)
+    vif = calc_vif(df)
+    mcColumns = vif[vif['VIF'] > vifCutoff]['variables']
+    mcColumns = mcColumns[mcColumns != 'LogSalePrice']
+    df.drop(columns=mcColumns, inplace=True)
+    vif = vif[vif['VIF'] <= vifCutoff]
+    return vif
+
 def dfMods(categorical: pd.DataFrame):
-    modDF = categorical.copy()
-    modDF['GarageScore'] = modDF['GarageQual'] * modDF['GarageArea']
-    modDF['TotalFullBath'] = modDF['BsmtFullBath'] + modDF['FullBath']
-    modDF['TotalHalfBath'] = modDF['BsmtHalfBath'] + modDF['HalfBath']
-    modDF['TotalSF'] = modDF['GrLivArea'] + modDF['TotalBsmtSF']
+    categorical['GarageScore'] = categorical['GarageQual'] * categorical['GarageArea']
+    categorical['TotalFullBath'] = categorical['BsmtFullBath'] + categorical['FullBath']
+    categorical['TotalHalfBath'] = categorical['BsmtHalfBath'] + categorical['HalfBath']
+    categorical['TotalSF'] = categorical['GrLivArea'] + categorical['TotalBsmtSF']
 
-    if 'SalePrice' in modDF.columns:
-        modDF['LogSalePrice'] = np.log(modDF['SalePrice'])
+    if 'SalePrice' in categorical.columns:
+        categorical['LogSalePrice'] = np.log(categorical['SalePrice'])
+        categorical.drop(columns=['SalePrice'])
 
-    modDF.drop(columns=['GarageQual', 'GarageArea', 'BsmtFullBath', 'FullBath', 'BsmtHalfBath', 'HalfBath', 'GrLivArea', 'TotalBsmtSF', 'SalePrice'], inplace=True)
+    categorical.drop(columns=['GarageQual', 'GarageArea', 'BsmtFullBath', 'FullBath', 'BsmtHalfBath', 'HalfBath', 'GrLivArea', 'TotalBsmtSF'], inplace=True)
     #modDF[''] = modDF[''] modDF['']
 
 ## use vif to reduce muticollinarity
-    vifCutoff = 5
-    vif = calc_vif(modDF)
-    mcColumns = vif[vif['VIF'] > vifCutoff]['variables']
-    mcColumns = mcColumns[mcColumns != 'LogSalePrice']
-    modDF.drop(columns=mcColumns, inplace=True)
-    vif = vif[vif['VIF'] <= vifCutoff]
 
+    #removeColumnsByVif(categorical)
     print('Finished Modifying Dataframe','\n')
-    return modDF
+    return categorical
 
     # average room size column
     # bathroom to room ratio

@@ -16,6 +16,10 @@ from Modules.Global import splitDfByCategory
 from sklearn.preprocessing import StandardScaler
 from Modules.EDA import train
 from typing import Dict
+from Modules.EDA import test
+
+import pickle
+
 
 # d. regression
 
@@ -25,6 +29,7 @@ class Regression:
         self.name = name
         self.hyperparams = hyperparams
         self.bestParams: Dict
+        self.time=''
 
     def fit(self,x,y):
         print('Starting ', self.name)
@@ -33,53 +38,51 @@ class Regression:
         self.model.fit(xTrain,yTrain)
         self.trainScore = self.model.score(xTrain, yTrain)
         self.testScore = self.model.score(xTest, yTest)
-        self.predicted = self.model.predict(xTest)
-        self.getRMSE(yTest)
+        self.trainRMSE = self.getRMSE(yTrain, self.model.predict(xTrain))
+        self.testRMSE = self.getRMSE(yTest, self.model.predict(xTest))
+
 
 
     def fitCV(self,x,y, cv=5):
         print('Starting ', self.name)
         xTrain, xTest, yTrain, yTest = train_test_split(x, y, test_size=0.3, random_state=0)
 
-        self.model.fit(xTrain,yTrain)
         grid = GridSearchCV(self.model, self.hyperparams, cv=cv, return_train_score = True, n_jobs=-1)
-        fit = grid.fit(xTest,yTest)
-        self.bestParams = fit.best_params_
-        self.trainScore = fit.best_estimator_.score(xTrain, yTrain)
-        self.testScore = fit.best_estimator_.score(xTest, yTest)
+        self.model = grid.fit(xTrain,yTrain)
+        self.bestParams = self.model.best_params_
+        self.trainScore = self.model.best_estimator_.score(xTrain, yTrain)
+        self.testScore = self.model.best_estimator_.score(xTest, yTest)
 
-        self.predicted = self.model.predict(xTest)
-
-        self.trainRMSE = self.getRMSE(yTrain)
-        self.testRMSE = self.getRMSE(yTest)
+        self.trainRMSE = self.getRMSE(yTrain, self.model.predict(xTrain))
+        self.testRMSE = self.getRMSE(yTest, self.model.predict(xTest))
 
 
-    def getRMSE(self, y):
-        return sqrt(mean_squared_error(y, self.predicted))
+    def getRMSE(self, y, predicted):
+        return sqrt(mean_squared_error(y, predicted))
 
 
 def assembleModels():
 
-    alpha = np.linspace(1e-100,10,30)
+    alpha = np.linspace(1e-10,50,50)
     models = {
     'Linear'     : Regression(LinearRegression(n_jobs=-1), 'Linear'),
     'Ridge'      :  Regression(Ridge(), 'Ridge', {'alpha': alpha}),
-    'Lasso'      :  Regression(Lasso(max_iter=100000), 'Lasso', {'alpha': alpha}),
-    'Elastic Net': Regression(ElasticNet(max_iter=100000), 'ElasticNet', {'alpha': alpha, 'l1_ratio': np.linspace(0, 1, 20)}),
+    'Lasso'      :  Regression(Lasso(), 'Lasso', {'alpha': alpha}),
+    'Elastic Net': Regression(ElasticNet(), 'ElasticNet', {'alpha': alpha, 'l1_ratio': np.linspace(0, 1, 20)}),
 
     'Random Forest': Regression(RandomForestRegressor(n_jobs=-1), 'Random Forest',
-    {   'max_depth': range(2, 16),
+    {   'max_depth': range(2, 20),
         'n_estimators': range(10, 60, 10)}),
 
     'Gradient Boost': Regression(GradientBoostingRegressor(), 'Gradient Boost',
-               {'learning_rate': np.linspace(.001, 1, 10),
+               {'learning_rate': np.linspace(.001, 0.2, 10),
                 'n_estimators': range(10, 100, 10),
-                'max_depth': range(2, 12, 2),
+                'max_depth': range(2, 10, 2),
                 'loss': ['ls']}), # use feature_importances for feature selection
 
     'SVM': Regression(SVR(), 'Support Vector Regressor',
-               {'C': np.linspace(1, 200, 20),
-                'gamma': np.linspace(1e-4, 1e-2, 10)})
+               {'C': np.linspace(1, 20, 20),
+                'gamma': np.linspace(1e-6, 1e-2, 10)})
     #Regression((), ''),
     #Regression((), ''),
     }
@@ -91,23 +94,60 @@ def performRegressions(df: pd.DataFrame):
     y = df['LogSalePrice']
 
     continuousColumns = getColumnType(df, 'Continuous', True)
+
+    continuousColumns.remove('LogSalePrice')
     x = scaleData(df.drop(columns=['LogSalePrice']), continuousColumns)
 
-    ut.getExecutionTime(lambda: models['Linear'].fit(x, y))
-    ut.getExecutionTime(lambda: models['Ridge'].fitCV(x, y))
-    ut.getExecutionTime(lambda: models['Lasso'].fitCV(x, y))
-    ut.getExecutionTime(lambda: models['Elastic Net'].fitCV(x, y))
+    models['Linear'].time,         returnValue = ut.getExecutionTime(lambda: models['Linear'].fit(x, y))
+    models['Ridge'].time,          returnValue = ut.getExecutionTime(lambda: models['Ridge'].fitCV(x, y))
+    models['Lasso'].time,          returnValue = ut.getExecutionTime(lambda: models['Lasso'].fitCV(x, y))
+    models['Elastic Net'].time,    returnValue = ut.getExecutionTime(lambda: models['Elastic Net'].fitCV(x, y))
 
-    ut.getExecutionTime(lambda: models['Random Forest'].fitCV(x,y))
-    ut.getExecutionTime(lambda: models['Gradient Boost'].fitCV(x, y))
-    ut.getExecutionTime(lambda: models['SVM'].fitCV(x, y))
+    models['Random Forest'].time,  returnValue = ut.getExecutionTime(lambda: models['Random Forest'].fitCV(x,y))
+    models['Gradient Boost'].time, returnValue = ut.getExecutionTime(lambda: models['Gradient Boost'].fitCV(x, y))
+    models['SVM'].time,            returnValue = ut.getExecutionTime(lambda: models['SVM'].fitCV(x, y))
 
-    results = pd.DataFrame([r.__dict__ for r in models.values()]).drop(columns=['model', 'hyperparams', 'predicted'] )
-    return models, results
+    results = pd.DataFrame([r.__dict__ for r in models.values()]).drop(columns=['model', 'hyperparams'] )
+
+    roundColumns4Digits = ['trainScore', 'testScore']
+    #roundColumns8Digits = ['trainRMSE', 'testRMSE']
+    for c in roundColumns4Digits:
+        results[c] = results[c].apply(ut.roundTraditional, args = (4,) )
+
+    results.to_excel('Output/Model Results.xlsx')
+    print('Finished Regressions')
+    return models
 
 
-def predictLogSalePrice(dfTest: pd.DataFrame, models: Dict):
-    pass
+def predictSalePrice(dfTest: pd.DataFrame, models: Dict):
+    continuousColumns = getColumnType(dfTest, 'Continuous', True)
+
+    x = scaleData(dfTest, continuousColumns)
+    predictions = pd.DataFrame(test['Id'])
+
+    for regression in models.values():
+
+        # x is 1459 by 216
+        prediction = regression.model.predict(x)
+        predictions = ut.appendColumns([predictions, prediction])
+
+    finalPrediction = predictions.apply(np.mean, axis=0).apply(np.exp)
+
+    output = pd.concat([dfTest['Id'], finalPrediction])
+    output.to_excel('../Output/Submission.xlsx')
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # look up randomizedSearchCV vs. GridsearchCV
 
