@@ -21,7 +21,7 @@ def removeColumnsByVif(df: pd.DataFrame):
     vif = vif[vif['VIF'] <= vifCutoff]
     return vif
 
-def dfMods(categorical: pd.DataFrame):
+def dfMods(categorical: pd.DataFrame, featureSelectVif: bool):
     categorical['GarageScore'] = categorical['GarageQual'] * categorical['GarageArea']
     categorical['TotalFullBath'] = categorical['BsmtFullBath'] + categorical['FullBath']
     categorical['TotalHalfBath'] = categorical['BsmtHalfBath'] + categorical['HalfBath']
@@ -29,14 +29,14 @@ def dfMods(categorical: pd.DataFrame):
 
     if 'SalePrice' in categorical.columns:
         categorical['LogSalePrice'] = np.log(categorical['SalePrice'])
-        categorical.drop(columns=['SalePrice'])
+        categorical.drop(columns=['SalePrice'], inplace=True)
 
     categorical.drop(columns=['GarageQual', 'GarageArea', 'BsmtFullBath', 'FullBath', 'BsmtHalfBath', 'HalfBath', 'GrLivArea', 'TotalBsmtSF'], inplace=True)
     #modDF[''] = modDF[''] modDF['']
 
 ## use vif to reduce muticollinarity
-
-    #removeColumnsByVif(categorical)
+    if featureSelectVif:
+        removeColumnsByVif(categorical)
     print('Finished Modifying Dataframe','\n')
     return categorical
 

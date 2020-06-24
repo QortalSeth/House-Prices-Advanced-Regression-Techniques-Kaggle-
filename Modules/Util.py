@@ -7,7 +7,7 @@ import types
 import pickle
 
 
-def getRows(df: pd.DataFrame) -> int:
+def getRowsNum(df: pd.DataFrame) -> int:
     return len(df.index)
 
 
@@ -34,7 +34,7 @@ def printNulls(df: pd.DataFrame):
     null_columns = df.columns[df.isnull().any()]
     for c in null_columns:
         nullRows = df[c].isnull().sum()
-        totalRows = getRows(df[c])
+        totalRows = getRowsNum(df[c])
         print(c, ' ', nullRows, '/', totalRows, ' = ', int(nullRows / totalRows * 100), '%')
         print(df[c].value_counts(), '\n')
     print('# of Null columns: ', len(null_columns))
@@ -98,13 +98,13 @@ def removeEmptyAll(list: List[pd.DataFrame]):
         removeEmpty(df)
 
 def removeEmpty(df: pd.DataFrame, printEmpty=False):
-    rowCountBefore = getRows(df)
+    rowCountBefore = getRowsNum(df)
     columnCountBefore = getColumns(df)
 
     df.dropna(axis=0, how='all', inplace=True)
     df.dropna(axis=1, how='all', inplace=True)
 
-    rowsRemoved = rowCountBefore - getRows(df)
+    rowsRemoved = rowCountBefore - getRowsNum(df)
     columnsRemoved = columnCountBefore - getColumns(df)
 
     if(printEmpty):

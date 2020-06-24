@@ -4,8 +4,11 @@ from Modules.Global import splitDfByCategory
 from Modules.Impute import *
 import Modules.Util as ut
 
-def categoricalEncoding(imputed: pd.DataFrame):
-    nominal, ordinal, discrete, continuous = splitDfByCategory(imputed)
+def categoricalEncoding(imputedTrain: pd.DataFrame, imputedTest: pd.DataFrame):
+
+    fullDF = imputedTrain.append(imputedTest)
+    nominal, ordinal, discrete, continuous = splitDfByCategory(fullDF)
+
 
     # nominal train:    (1460, 23) test: (1459, 23)
     # ordinal train:    (1460, 21) test: (1459, 21)
@@ -61,10 +64,17 @@ def categoricalEncoding(imputed: pd.DataFrame):
 
 
 
-    categorical = ut.appendColumns([dummies, ordinal, discrete, continuous])
+    categoricalFull = ut.appendColumns([dummies, ordinal, discrete, continuous])
 
-    #ut.printNulls(categorical)
-    #nulls = ut.getNulls(categorical)
+    trainLen = ut.getRowsNum(imputedTrain)
+
+    categoricalTrain = categoricalFull.iloc[0:trainLen,]
+    categoricalTest  = categoricalFull.iloc[trainLen:, ].copy()
+    categoricalTest.drop(columns= ['SalePrice'], inplace= True)
+
+
+    #ut.printNulls(categoricalFull)
+    #nulls = ut.getNulls(categoricalFull)
     print('Finished Categorical Encoding','\n')
-    return categorical
+    return categoricalTrain, categoricalTest
 

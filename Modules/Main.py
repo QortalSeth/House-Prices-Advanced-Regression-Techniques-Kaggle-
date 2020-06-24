@@ -10,17 +10,21 @@ import Modules.Util as ut
 import pickle
 
 ## Initialize values
-generateModels = True
+generateModels = False
+featureSelectVIF = False
 
-if generateModels:
+
 ## impute data
-    imputed = impute(train.copy())
+imputed = impute(train.copy())
+imputedTest = impute(test.copy())
 
 ## performs one hot encoding on nominal vars and label encoding on ordinal vars
-    categorical = categoricalEncoding(imputed.copy())
+categorical, categoricalTest = categoricalEncoding(imputed.copy(), imputedTest.copy())
 
+
+if generateModels:
 ## adds or modifies columns to prepare for regressions
-    modDF = dfMods(categorical.copy())
+    modDF = dfMods(categorical.copy(), featureSelectVIF)
 
 ## performs regressions and returns dataframe with output
     time, models = ut.getExecutionTime(lambda: performRegressions(modDF))
@@ -30,26 +34,17 @@ else:
     models = ut.unpickleObject('Output/models.pkl')
     # Train Size is (1460,81)
     # Imputed Size is (1460,77)
-    # Categorical Size is (1460, 234)
+    # Categorical Size is (1460, 235)
     # modDF Size is (1460,231)
 
     # Test Size is (1459,80)
     # Imputed Size is (1459,76)
-    # Categorical Size is (1459, 216) 18 columns missing
-    # modDF Size is (1459,216) 15 columns missing
+    # Categorical Size is (1459, 230) 5 columns missing
+    # modDF Size is (1459,230)
 
-
-
-## impute test data
-imputedTest = impute(test.copy())
-
-## categorical test data
-categoricalTest = categoricalEncoding(imputedTest)
-#categoricalDiffColumns = ut.getColumnDiff(categoricalTest, categorical)
-#categoricalDiffColumns2 = ut.getColumnDiff(categorical, categoricalTest)
 
 ## mod test data
-modTest = dfMods(categoricalTest)
+modTest = dfMods(categoricalTest, featureSelectVIF)
 
 # modDfDiffColumns = ut.getColumnDiff(modDF, modTest)
 # modDfDiffColumns2 = ut.getColumnDiff(modTest, modDF)
