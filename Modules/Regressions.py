@@ -65,7 +65,9 @@ class Regression:
         return sqrt(np.exp(mean_squared_error(y, predicted)))
 
 
-    def plotHyperParams(self, trainX, testX, trainY, testY):
+
+
+    def plotHyperParams(self, trainX, testX, trainY, testY, i):
 
 
         for name, params in self.hyperparams.items():
@@ -87,29 +89,65 @@ class Regression:
 
             plt.plot(params, trainScore, label=r'train set $R^2$')
             plt.plot(params, testScore, label=r'test set $R^2$')
+
+            plt.xlabel(name+' Value')
+            plt.ylabel('R^2 Value')
+            plt.title(self.name+' R^2 VS. '+ name)
             plt.legend(loc=4)
-            plt.savefig('Output/Hyperparams/'+self.name+' '+name+'.png')
+            plt.savefig('Output/Hyperparams/'+str(i)+' - '+self.name+' '+name+'.png')
             plt.clf()
 
 
+def assembleModels():
+
+    models = {
+    'Linear'     : Regression(LinearRegression(n_jobs=-1), 'Linear'),
+    'Ridge'      :  Regression(Ridge(), 'Ridge', {'alpha': np.linspace(1,10,100)}),
+    'Lasso'      :  Regression(Lasso(), 'Lasso', {'alpha': np.linspace(1e-10,0.002,100)}),
+    'Elastic Net': Regression(ElasticNet(), 'ElasticNet', {'alpha': np.linspace(1e-10, 10, 100), 'l1_ratio': np.linspace(0, 1, 20)}),
+
+    'Random Forest': Regression(RandomForestRegressor(n_jobs=-1), 'Random Forest',
+    {   'max_depth': range(5, 20),
+        'n_estimators': range(20, 40, 2)}),
+
+    'Gradient Boost': Regression(GradientBoostingRegressor(), 'Gradient Boost',
+               {'learning_rate': np.linspace(.001, 0.1, 10),
+                'n_estimators': range(60, 80, 5),
+                'max_depth': range(1, 6),
+                'loss': ['ls']}), # use feature_importances for feature selection
+
+    'SVM': Regression(SVR(), 'Support Vector Regressor',
+               {'C': np.linspace(1, 10, 30),
+                'gamma': np.linspace(1e-7, 0.1, 30)})
+    #Regression((), ''),
+    #Regression((), ''),
+    }
+    return models
 
 def performRegressions(df: pd.DataFrame):
     models = assembleModels()
     y = df['LogSalePrice']
 
     continuousColumns = getColumnType(df, 'Continuous', True)
+    discreteColumns   = getColumnType(df, 'Discrete', True)
+    ordinalColumns = getColumnType(df, 'Ordinal', True)
+
 
     continuousColumns.remove('LogSalePrice')
     x = scaleData(df.drop(columns=['LogSalePrice']), continuousColumns)
-
+    #x = df.drop(columns=['LogSalePrice'])
     trainTestData = train_test_split(x, y, test_size=0.3, random_state=0)
 
-    # models['Ridge'].plotHyperParams(*trainTestData)
-    # models['Lasso'].plotHyperParams(*trainTestData)
+    #models['Ridge'].plotHyperParams(*trainTestData, 1)
+    # models['Lasso'].plotHyperParams(*trainTestData,2)
     # models['Elastic Net'].plotHyperParams(*trainTestData)
 
+    # models['Ridge'].plotHyperParams(*trainTestData)
+    # models['SVM'].plotHyperParams(*trainTestData)
+    i=0
     for name, model in models.items():
-        model.plotHyperParams(*trainTestData)
+        model.plotHyperParams(*trainTestData,i)
+        i+=1
 
     models['Linear'].time,         returnValue = ut.getExecutionTime(lambda: models['Linear'].fit(*trainTestData))
     models['Ridge'].time,          returnValue = ut.getExecutionTime(lambda: models['Ridge'].fitCV(*trainTestData))
@@ -118,7 +156,7 @@ def performRegressions(df: pd.DataFrame):
 
     models['Random Forest'].time,  returnValue = ut.getExecutionTime(lambda: models['Random Forest'].fitCV(*trainTestData))
     models['Gradient Boost'].time, returnValue = ut.getExecutionTime(lambda: models['Gradient Boost'].fitCV(*trainTestData))
-    models['SVM'].time,            returnValue = ut.getExecutionTime(lambda: models['SVM'].fitCV(*trainTestData))
+    models['SVM'].time,              returnValue = ut.getExecutionTime(lambda: models['SVM'].fitCV(*trainTestData))
 
     results = pd.DataFrame([r.__dict__ for r in models.values()]).drop(columns=['model', 'hyperparams', 'modelCV'] )
 
@@ -132,32 +170,7 @@ def performRegressions(df: pd.DataFrame):
     return models
 
 
-def assembleModels():
 
-    alpha = np.linspace(0,50,50)
-    models = {
-    'Linear'     : Regression(LinearRegression(n_jobs=-1), 'Linear'),
-    'Ridge'      :  Regression(Ridge(), 'Ridge', {'alpha': alpha}),
-    'Lasso'      :  Regression(Lasso(), 'Lasso', {'alpha': alpha}),
-    'Elastic Net': Regression(ElasticNet(), 'ElasticNet', {'alpha': alpha, 'l1_ratio': np.linspace(0, 1, 20)}),
-
-    'Random Forest': Regression(RandomForestRegressor(n_jobs=-1), 'Random Forest',
-    {   'max_depth': range(2, 20),
-        'n_estimators': range(10, 60, 10)}),
-
-    'Gradient Boost': Regression(GradientBoostingRegressor(), 'Gradient Boost',
-               {'learning_rate': np.linspace(.001, 0.2, 10),
-                'n_estimators': range(10, 100, 10),
-                'max_depth': range(2, 10, 2),
-                'loss': ['ls']}), # use feature_importances for feature selection
-
-    'SVM': Regression(SVR(), 'Support Vector Regressor',
-               {'C': np.linspace(1, 20, 20),
-                'gamma': np.linspace(1e-6, 1e-2, 10)})
-    #Regression((), ''),
-    #Regression((), ''),
-    }
-    return models
 
 
 def predictSalePrice(dfTest: pd.DataFrame, models: Dict):

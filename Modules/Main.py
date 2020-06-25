@@ -10,7 +10,7 @@ import Modules.Util as ut
 import pickle
 
 ## Initialize values
-generateModels = False
+generateModels = True
 featureSelectVIF = False
 
 

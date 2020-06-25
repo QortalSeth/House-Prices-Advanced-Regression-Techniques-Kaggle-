@@ -2,7 +2,7 @@ from sklearn.model_selection import GridSearchCV
 import pandas as pd
 from Modules.EDA import columnNotes, columnNotes2
 from typing import List
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 def getColumnType(df, type: str, includeDfMods=False):
     returnValue = columnNotes[columnNotes['Type'] == type]
@@ -29,12 +29,7 @@ def scaleData(df: pd.DataFrame, columns: List, inplace=False):
 
     sc = StandardScaler()
 
-    for c in columns:
-        column = result[[c]]
-        column = sc.fit_transform(column)
-        column = flatten(column)
-        column = pd.Series(column)
-        result[c] = column
+    result[columns] = sc.fit_transform(result[columns])
     if inplace:
         return None
     else:
