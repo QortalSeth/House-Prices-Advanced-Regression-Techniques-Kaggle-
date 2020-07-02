@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import time
 import types
 import pickle
+import numpy as np
 
 
 def getRowsNum(df: pd.DataFrame) -> int:
@@ -32,17 +33,32 @@ def printDict(dict: Dict, start=''):
 def printNulls(df: pd.DataFrame):
     print('Null Columns:')
     null_columns = df.columns[df.isnull().any()]
+    totalRows = getRowsNum(df)
     for c in null_columns:
         nullRows = df[c].isnull().sum()
-        totalRows = getRowsNum(df[c])
         print(c, ' ', nullRows, '/', totalRows, ' = ', int(nullRows / totalRows * 100), '%')
         print(df[c].value_counts(), '\n')
     print('# of Null columns: ', len(null_columns))
 
-def getNulls(df: pd.DataFrame):
+def getNullColumns(df: pd.DataFrame):
     null_columns = df.columns[df.isnull().any()]
     result = df[null_columns]
     return result[result.isnull().any(axis=1)]
+
+def getNullPercents(df: pd.DataFrame, ascending=True):
+
+    result = pd.DataFrame()
+    result['Column'] = df.columns
+    totalRows = getRowsNum(df)
+    percent = []
+    for c in df.columns:
+        nullRows = df[c].isnull().sum()
+        percent.append(int(nullRows / totalRows * 100))
+
+    result['Null Percent'] = pd.Series(percent)
+
+    result = result[result['Null Percent'] > 0].sort_values(by='Null Percent', ascending=ascending, ignore_index=True)
+    return result
 
 def pickleObject(object, fileName):
     fileWrite = open(fileName, 'wb')
@@ -184,6 +200,7 @@ def plotSetup(params: Dict):
         elif isinstance(f, types.LambdaType):
             f()
         else:
+            #print(' f: ',f,' p: ',p)
             getattr(plt, f)(p)
 
 def selectExcept(df, colnames: List[str]):
@@ -201,6 +218,12 @@ def getRange(listP: List):
     step = int(listP[1] - listP[0])
     return start, end, step
 
+
+def multiplyLinSpace(listP: List, mult: float):
+    start, stop, num = getLinSpace(listP)
+    result = np.linspace(start, stop, num*mult-1)
+    return result
+
 def multiplyRange(listP: List, mult: float):
     start, end, step = getRange(listP)
     listTest = list(range(start, end+step, step))
@@ -213,6 +236,13 @@ def multiplyFigSize(x=1.0, y=1.0):
         fig = plt.gcf()
         figSize = fig.get_size_inches()
         fig.set_size_inches((figSize[0]*x, figSize[1]*y))
+
+
+def getTime(s: str):
+    split = s.split(' ')
+    minutes = split[1]
+    seconds = split[-1]
+    return float(minutes) * 60 + float(seconds)
 
 
 def getExecutionTime(fun: Callable):
@@ -232,6 +262,31 @@ def getExecutionTime(fun: Callable):
     timeString = 'Minutes: '+ str(minutes)+ '  Seconds: '+ str(seconds)
     print(timeString,'\n')
     return timeString, returnValue
+
+def removeOutliers(S: pd.Series, inplace= False, printOutput=False):
+    result = S = S[~((S - S.mean()).abs() > 3 * S.std())]
+
+    if printOutput:
+        print('S Length: ', getRowsNum(S))
+        print('results Length: ', getRowsNum(result))
+    if inplace:
+            S = result
+            return None
+    else:
+        return result
+
+def plotDF(df: pd.DataFrame, plotParams: Dict, showParams: Dict, figParams= {'x': 7, 'y': 7}, removeOutliersBeforePlotting=True):
+    if removeOutliersBeforePlotting:
+        if 'x' in plotParams:
+            newDF = removeOutliers(df, columns=[plotParams['x'], plotParams['y']])
+        else:
+            newDF = removeOutliers(df)
+    else:
+        newDF = df
+    newDF.plot(**plotParams)
+
+    multiplyFigSize(**figParams)
+    plotSetup(showParams)
 
 def appendColumns(columnList):
     return pd.concat(columnList, axis=1)

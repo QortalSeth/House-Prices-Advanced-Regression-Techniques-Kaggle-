@@ -34,13 +34,6 @@ def impute(imputed: pd.DataFrame):
     imputed['MasVnrArea'].fillna(0, inplace=True)
     imputed['GarageType'].fillna('NA', inplace=True)
 
-    #imputed['GarageYrBlt'].fillna('NA', inplace=True)
- #   imputed['GarageFinish'].fillna('NA', inplace=True)
- #   imputed['Fence'].fillna('NA', inplace=True)
-
-#BsmtQual, Cond, Exposure, FinType1, FinType2 no imputation needed
-# GarageQual, GarageCond not needed
-
 # Mode Imputation:
     imputed['Electrical'].fillna(imputed['Electrical'].mode()[0], inplace=True)
     imputed['GarageCars'].fillna(imputed['GarageCars'].mode()[0], inplace=True)

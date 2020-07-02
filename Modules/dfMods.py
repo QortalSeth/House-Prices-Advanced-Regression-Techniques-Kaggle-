@@ -10,13 +10,11 @@ def calc_vif(X):
 
     return(vif)
 
-def removeColumnsByVif(df: pd.DataFrame):
-    vifCutoff = 5
+def removeColumnsByVif(df: pd.DataFrame, vifCutoff = 5):
     #ut.printNulls(modDF)
     #nulls = ut.getNulls(modDF)
     vif = calc_vif(df)
     mcColumns = vif[vif['VIF'] > vifCutoff]['variables']
-    mcColumns = mcColumns[mcColumns != 'LogSalePrice']
     df.drop(columns=mcColumns, inplace=True)
     vif = vif[vif['VIF'] <= vifCutoff]
     return vif
@@ -27,16 +25,20 @@ def dfMods(categorical: pd.DataFrame, featureSelectVif: bool):
     categorical['TotalHalfBath'] = categorical['BsmtHalfBath'] + categorical['HalfBath']
     categorical['TotalSF'] = categorical['GrLivArea'] + categorical['TotalBsmtSF']
 
-    if 'SalePrice' in categorical.columns:
-        categorical['LogSalePrice'] = np.log(categorical['SalePrice'])
-        categorical.drop(columns=['SalePrice'], inplace=True)
+    categorical['LogSalePrice'] = np.log(categorical['SalePrice'])
+    categorical.drop(columns=['SalePrice'], inplace=True)
 
     categorical.drop(columns=['GarageQual', 'GarageArea', 'BsmtFullBath', 'FullBath', 'BsmtHalfBath', 'HalfBath', 'GrLivArea', 'TotalBsmtSF'], inplace=True)
     #modDF[''] = modDF[''] modDF['']
 
 ## use vif to reduce muticollinarity
+    logSalePrice = categorical['LogSalePrice']
     if featureSelectVif:
+        logSalePrice = categorical['LogSalePrice']
+        categorical.drop(columns=['LogSalePrice'], inplace=True)
         removeColumnsByVif(categorical)
+        categorical['LogSalePrice'] = logSalePrice
+
     print('Finished Modifying Dataframe','\n')
     return categorical
 

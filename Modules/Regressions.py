@@ -81,6 +81,7 @@ class Regression:
 
             for value in params:
                 self.model.set_params(**{name: value})
+                #print(name, '   Value: ',value)
                 self.model.fit(trainX, trainY)
            # intercepts.append(self.model.intercept_)
            # coefs.append(self.model.coef_)
@@ -102,9 +103,9 @@ def assembleModels():
 
     models = {
     'Linear'     : Regression(LinearRegression(n_jobs=-1), 'Linear'),
-    'Ridge'      :  Regression(Ridge(), 'Ridge', {'alpha': np.linspace(1,10,100)}),
-    'Lasso'      :  Regression(Lasso(), 'Lasso', {'alpha': np.linspace(1e-10,0.002,100)}),
-    'Elastic Net': Regression(ElasticNet(), 'ElasticNet', {'alpha': np.linspace(1e-10, 10, 100), 'l1_ratio': np.linspace(0, 1, 20)}),
+    'Ridge'      :  Regression(Ridge(), 'Ridge', {'alpha': np.linspace(1,6,100)}),
+    'Lasso'      :  Regression(Lasso(), 'Lasso', {'alpha': np.linspace(1e-10,0.002,200)}),
+    'Elastic Net': Regression(ElasticNet(), 'ElasticNet', {'alpha': np.linspace(1e-10, 10, 200), 'l1_ratio': np.linspace(0, 1, 10)}),
 
     'Random Forest': Regression(RandomForestRegressor(n_jobs=-1), 'Random Forest',
     {   'max_depth': range(5, 20),
@@ -156,9 +157,9 @@ def performRegressions(df: pd.DataFrame):
 
     models['Random Forest'].time,  returnValue = ut.getExecutionTime(lambda: models['Random Forest'].fitCV(*trainTestData))
     models['Gradient Boost'].time, returnValue = ut.getExecutionTime(lambda: models['Gradient Boost'].fitCV(*trainTestData))
-    models['SVM'].time,              returnValue = ut.getExecutionTime(lambda: models['SVM'].fitCV(*trainTestData))
+    models['SVM'].time,            returnValue = ut.getExecutionTime(lambda: models['SVM'].fitCV(*trainTestData))
 
-    results = pd.DataFrame([r.__dict__ for r in models.values()]).drop(columns=['model', 'hyperparams', 'modelCV'] )
+    results = pd.DataFrame([r.__dict__ for r in models.values()]).drop(columns=['model', 'modelCV'] )
 
     roundColumns4Digits = ['trainScore', 'testScore']
     #roundColumns8Digits = ['trainRMSE', 'testRMSE']
@@ -177,16 +178,17 @@ def predictSalePrice(dfTest: pd.DataFrame, models: Dict):
     continuousColumns = getColumnType(dfTest, 'Continuous', True)
 
     x = scaleData(dfTest, continuousColumns)
-    predictions = pd.DataFrame(test['Id'])
+    predictions = pd.DataFrame()
 
     for regression in models.values():
-        prediction = regression.model.predict(x)
-        predictions = ut.appendColumns([predictions, prediction])  # * crash here
+        prediction = pd.Series(regression.model.predict(x))
+        predictions = ut.appendColumns([predictions, prediction])
 
-    finalPrediction = predictions.apply(np.mean, axis=0).apply(np.exp)
+    salePrice  = predictions.apply(np.exp, axis=1)
+    finalPrediction = salePrice.apply(np.mean, axis=1)
 
-    output = pd.concat([dfTest['Id'], finalPrediction])
-    output.to_excel('../Output/Submission.xlsx')
+    output = pd.DataFrame({'Id': test['Id'].astype(int), 'SalePrice': finalPrediction})
+    output.to_csv('Output/Submission.csv', index=False)
 
 
 

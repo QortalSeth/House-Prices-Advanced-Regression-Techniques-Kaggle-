@@ -7,53 +7,52 @@ from Modules.CategoricalEncoding import categoricalEncoding
 from Modules.dfMods import dfMods
 from Modules.Regressions import performRegressions, predictSalePrice
 import Modules.Util as ut
+import Modules.Plots as plots
 import pickle
 
 ## Initialize values
-generateModels = True
+generateModels = False
 featureSelectVIF = False
 
+fullDF = train.append(test)
 
 ## impute data
-imputed = impute(train.copy())
-imputedTest = impute(test.copy())
+imputed = impute(fullDF.copy())
 
 ## performs one hot encoding on nominal vars and label encoding on ordinal vars
-categorical, categoricalTest = categoricalEncoding(imputed.copy(), imputedTest.copy())
+categorical = categoricalEncoding(imputed.copy())
 
+## adds or manipulates columns
+modDF = dfMods(categorical.copy(), featureSelectVIF)
 
-if generateModels:
 ## adds or modifies columns to prepare for regressions
-    modDF = dfMods(categorical.copy(), featureSelectVIF)
+
+trainLen = ut.getRowsNum(train)
+modDfTrain = modDF.iloc[0:trainLen, ]
+modDfTest = modDF.iloc[trainLen:, ].copy()
+modDfTest.drop(columns=['LogSalePrice'], inplace=True)
 
 ## performs regressions and returns dataframe with output
-    time, models = ut.getExecutionTime(lambda: performRegressions(modDF))
-    ut.pickleObject(models, 'Output/models.pkl')
+if generateModels:
 
+    time, models = ut.getExecutionTime(lambda: performRegressions(modDfTrain))
+    ut.pickleObject(models, 'Output/models.pkl')
 else:
     models = ut.unpickleObject('Output/models.pkl')
-    # Train Size is (1460,81)
-    # Imputed Size is (1460,77)
-    # Categorical Size is (1460, 235)
-    # modDF Size is (1460,231)
-
-    # Test Size is (1459,80)
-    # Imputed Size is (1459,76)
-    # Categorical Size is (1459, 230) 5 columns missing
-    # modDF Size is (1459,230)
 
 
-## mod test data
-modTest = dfMods(categoricalTest, featureSelectVIF)
 
 # modDfDiffColumns = ut.getColumnDiff(modDF, modTest)
 # modDfDiffColumns2 = ut.getColumnDiff(modTest, modDF)
 
+## plot data
+plots.plotResults(train,modDfTrain, models)
+
 ## predict test data
-predictSalePrice(modTest, models)
+predictSalePrice(modDfTest, models)
 
 
 ## plot data
-print('finished')
+print('Finished')
 
 
