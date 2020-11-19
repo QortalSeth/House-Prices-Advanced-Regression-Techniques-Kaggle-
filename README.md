@@ -1,2 +1,110 @@
-# House-Prices-Advanced-Regression-Techniques-Kaggle-
-[This Kaggle competition](https://www.kaggle.com/c/house-prices-advanced-regression-techniques/overview) involves using Machine Learning to predict house prices in Ames, Iowa. 
+## Intro
+
+[This Kaggle competition](https://www.kaggle.com/c/house-prices-advanced-regression-techniques/overview) involves predicting the price of housing using a dataset with 79 features. The data has missing values and other issues that need to be dealt with in order to run regressions on it.
+
+## Imputation
+![Null Columns](https://github.com/sethmjackson/House-Prices-Advanced-Regression-Techniques-Kaggle-/blob/master/Output/Barplots/Null%20Percents.png)
+Regressions don't handle missing values well, so they need to be replaced with a value. Each column uses the Imputation strategy most suited to it.
+
+### Removal
+
+The following columns were removed due to them having so many null values that imputation is not feasible:
+
+1. MiscFeature - 96% null
+2. MiscValue - 96% null
+3. PoolQC - 99% null
+4. PoolArea - 99% null
+
+### NA as Class
+
+The following columns had their missing values filled with a specific value to indicate that the attribute itself was not present.
+
+1. Alley - NA => 'No Alley'
+2. MasVnrType - NA => 'None'
+3. MasVnrArea - NA=> 0
+
+### Mode
+
+These columns had their missing values filled with the mode value for that column, because the mode value was far more common than other values.
+
+1. All Basement Columns
+2. Electrical
+3. GarageCars
+4. GarageArea
+
+### Other
+
+These columns had a unique imputation strategy.
+
+1. LotFrontage - Value was set to the average value for its neighborhood.
+2. GarageYrBlt - Value was set to the year the house was built.
+
+
+## Column Transformations
+
+To make columns more relevant to the data, they were transformed and replaced by new columns.
+
+1. GarageScore = GarageQual * GarageArea
+2. TotalFullBath = BsmtFullBath + FullBath
+3. TotalHalfBath = BsmtHalfBath + HalfBath
+4. TotalSF = GrLivArea + TotalBsmtSF
+
+In addition to the above, SalePrice was transformed into LogSalePrice due to it being more normally distributed as seen below.
+
+![Sale Price](https://github.com/sethmjackson/House-Prices-Advanced-Regression-Techniques-Kaggle-/blob/master/Output/Histograms/SalePrice.png)
+![Log Sale Price](https://github.com/sethmjackson/House-Prices-Advanced-Regression-Techniques-Kaggle-/blob/master/Output/Histograms/LogSalePrice.png)
+
+## Regressions
+
+The following regression types were used in this project:
+
+1. MultiLinear Regression
+2. Ridge
+3. Lasso
+4. Elastic Net
+5. Random Forest
+6. Gradient Boost Tree
+7. Support Vector Machine
+
+Hyperparameters were tuned using GridSearchCV. Once all regressions were complete, the average of their predictions were used to predict LogSalePrice.
+
+![Model Scores](https://github.com/sethmjackson/House-Prices-Advanced-Regression-Techniques-Kaggle-/blob/master/Output/Barplots/Model%20Scores.png)
+Based on these results, the tree models performed best on the data, and the linear models did the worst. The difference in score between them is about 10%.
+
+![Model Times](https://github.com/sethmjackson/House-Prices-Advanced-Regression-Techniques-Kaggle-/blob/master/Output/Barplots/Model%20Times.png)
+ The linear models were faster than the tree models, with SVM and ElasticNet being the slowest due to high hyperparamater tuning. These times do not reflect the models in general, they display their times with the specific hyperparameters that were found using GridSearchCV
+
+## Feature Selection
+
+Multiple methods of Feature Selection were considered to determine which variables were most important.
+
+### VIF
+
+VIF, also known as Variance Inflation Factor, gives a number to each feature that shows how much it has in common with other features. High VIF scores are a sign that a feature contains redundant data, and may need to be removed. VIF columns are the columns with a VIF score less than 10
+
+![VIF Score Diffs](https://github.com/sethmjackson/House-Prices-Advanced-Regression-Techniques-Kaggle-/blob/master/Output/Barplots/Vif%20Model%20Score%20Diffs.png)
+
+
+Both Linear and Lasso models perform better with VIF, but the rest do better with the complete dataset. For this reason, the complete dataset was used to get the final results. While VIF regressions had lower scores, the time to perform regressions was significantly faster due to having less data to work with.
+
+### Post Regression Feature Selection
+
+Lasso and Gradient Boost models can be used to determine which features were most important in the model. The top 10 features for each model are shown here:
+
+![Lasso Feature selection](https://github.com/sethmjackson/House-Prices-Advanced-Regression-Techniques-Kaggle-/blob/master/Output/Barplots/Lasso%20Feature%20Selection.png)
+![Gradient Boost Feature Selection](https://github.com/sethmjackson/House-Prices-Advanced-Regression-Techniques-Kaggle-/blob/master/Output/Barplots/Gradient%20Boost%20Feature%20Selection.png)
+
+
+
+
+
+There are a lot of differences between them, but both are consistent in that Overall Quality and Total Square Feet are extremely important in determining house prices.
+
+## Conclusion
+
+The final prediction was generated by averaging the predicted sale price from each model. The RSME of the final submission was 0.17251. It is a good first start, but more can be done to improve the results.
+
+## Future Work
+Hyperparameter tuning was implemented by focusing on a tradoff between speed and accuracy. Additional tuning that focuses purely on performance by including larger ranges with more values within them could improve the results.
+Using model stacking or weighted averages could yield better results when combining the model predictions.
+More experimentation with different types of feature selection, as well as combining different feature selection types for each model, could improve performance. For example, using the VIF on the linear models, but all features on the tree models, would yield higher scores overall.
